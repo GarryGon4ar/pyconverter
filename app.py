@@ -2,13 +2,20 @@ import re
 import webbrowser
 from webob import Request, Response
 from jinja2 import Template, FileSystemLoader, Environment
+import youtube_dl
 
+def render_from_template(directory, template_name, **kwargs):
+    loader = FileSystemLoader(directory)
+    env = Environment(loader=loader)
+    template = env.get_template(template_name)
+    return template.render(**kwargs)
 
-# def render_from_template(directory, template_name, **kwargs):
-#     loader = FileSystemLoader(directory)
-#     env = Environment(loader=loader)
-#     template = env.get_template(template_name)
-#     return template.render(**kwargs)
+def download(url):
+	ydl_opts = {'format': 'bestaudio',}
+	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+		info = ydl.extract_info(url, download=False)
+		return info['formats'][0]['url']
+
 
 def render(file_name, context=None):
     with open(file_name, 'r') as html_file:
@@ -17,6 +24,7 @@ def render(file_name, context=None):
             template = Template(html)
             html = template.render(context)
         return html
+
 
 class App:
 
@@ -45,11 +53,18 @@ class App:
 def index(request, response):
     response.text = "Привет! Это ГЛАВНАЯ страница"
 
+
 def hello(request, response):
-	html= render("index.html")
-	response.text = html
 	# env = Environment(loader=FileSystemLoader('templates'))
 	# template = env.get_template('index.html')
+	if request.method == "POST":
+		url = request.POST.get('url')
+		uri = download(url)
+		response.status_code = 303
+		response.headerlist = [('Location', uri)]
+		return response
+	html= render("index.html")
+	response.text = html
 	return response
 	# print(response)
 	# return response
