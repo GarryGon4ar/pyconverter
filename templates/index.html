@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Youtube mp3 simple converter</title>
+    {% block page %}{{title}}{% endblock %}
 </head>
 <style>
     form {
@@ -10,9 +10,6 @@
     }
 </style>
 <body>
-	{% for item in range(5) %}
-      Hello !
-    {% endfor %}
 <form action="" method="POST">
   Paste youtube url:<br>
   <input type="url" name="url" value="Mickey">

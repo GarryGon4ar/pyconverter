@@ -4,9 +4,16 @@ from webob import Request, Response
 from jinja2 import Template, FileSystemLoader, Environment
 import youtube_dl
 
-def render_from_template(directory, template_name, **kwargs):
-    loader = FileSystemLoader(directory)
-    env = Environment(loader=loader)
+cars = [
+    {'name': 'Audi', 'price': 23000}, 
+    {'name': 'Skoda', 'price': 17300}, 
+    {'name': 'Volvo', 'price': 44300}, 
+    {'name': 'Volkswagen', 'price': 21300}
+]
+
+def render(template_name, **kwargs):
+    file_loader = FileSystemLoader('templates')
+    env = Environment(loader=file_loader)
     template = env.get_template(template_name)
     return template.render(**kwargs)
 
@@ -15,16 +22,6 @@ def download(url):
 	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
 		info = ydl.extract_info(url, download=False)
 		return info['formats'][0]['url']
-
-
-def render(file_name, context=None):
-    with open(file_name, 'r') as html_file:
-        html = html_file.read()
-        if context:
-            template = Template(html)
-            html = template.render(context)
-        return html
-
 
 class App:
 
@@ -55,24 +52,24 @@ def index(request, response):
 
 
 def hello(request, response):
-	# env = Environment(loader=FileSystemLoader('templates'))
-	# template = env.get_template('index.html')
 	if request.method == "POST":
 		url = request.POST.get('url')
 		uri = download(url)
 		response.status_code = 303
 		response.headerlist = [('Location', uri)]
 		return response
-	html= render("index.html")
-	response.text = html
+	data = render("index.html")
+	response.text = data 
 	return response
-	# print(response)
-	# return response
 
+def check_jinja(request, response):
+	data = render('index.html', title="Boorsok")
+	response.text = data
 
 urls = [
     (r'^$', index),
     (r'about/?$', hello),
+    (r'check/?$', check_jinja),
 ]
 
 # uwsgi вызывает приложение application, сделал в форме класса, 
