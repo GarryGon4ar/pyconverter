@@ -1,27 +1,6 @@
 import re
-import webbrowser
 from webob import Request, Response
-from jinja2 import Template, FileSystemLoader, Environment
-import youtube_dl
-
-cars = [
-    {'name': 'Audi', 'price': 23000}, 
-    {'name': 'Skoda', 'price': 17300}, 
-    {'name': 'Volvo', 'price': 44300}, 
-    {'name': 'Volkswagen', 'price': 21300}
-]
-
-def render(template_name, **kwargs):
-    file_loader = FileSystemLoader('templates')
-    env = Environment(loader=file_loader)
-    template = env.get_template(template_name)
-    return template.render(**kwargs)
-
-def download(url):
-	ydl_opts = {'format': 'bestaudio',}
-	with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-		info = ydl.extract_info(url, download=False)
-		return info['formats'][0]['url']
+from views import index, check_jinja
 
 class App:
 
@@ -30,7 +9,6 @@ class App:
 		path = environ.get('PATH_INFO').lstrip('/')
 		response = self.handle_request(request, path)
 		return response(environ, start_response)
-
 
 	def handle_request(self, request, path):
 		response = Response()
@@ -47,34 +25,17 @@ class App:
 		response.text = "Not found."
 
 
-def index(request, response):
-    response.text = "Привет! Это ГЛАВНАЯ страница"
-
-
-def hello(request, response):
-	if request.method == "POST":
-		url = request.POST.get('url')
-		uri = download(url)
-		response.status_code = 303
-		response.headerlist = [('Location', uri)]
-		return response
-	data = render("index.html")
-	response.text = data 
-	return response
-
-def check_jinja(request, response):
-	data = render('index.html', title="Boorsok")
-	response.text = data
 
 urls = [
     (r'^$', index),
-    (r'about/?$', hello),
     (r'check/?$', check_jinja),
 ]
 
 # uwsgi вызывает приложение application, сделал в форме класса, 
 #так как когда вызываю функцию application не могу придумать как добавить обработку запроса
+
 application = App()
+
 
 # Необходимо
 # написать веб приложение которое совместимо с uWSGI. А точнее сделать 4е
@@ -84,3 +45,20 @@ application = App()
 # 3. Должен быть файл с миграциями
 # 4. Работа с темплейтами то есть должен быть подключен движок для темплейтов JINJA 2
 # 5. Движок для темплейтов не просто так небходимо сделать какой нибудь отчет (какой придумаю позже)
+
+
+# Делаем предыдущее задание, но на асинхронной манере через отложенное выполнение. При этом мы выкачиваем только mp3 файл. Можно сделать через websocket. Код опубликовать на github
+# Пользовательская история:
+# Я зашел на сайт и оставил ссылку, по которой я хочу получить mp3 и email адрес, на который мне придет письмо. Закрыл страницу.
+
+# Система в этот момент кодирует mp3 файл, кладет на файловую систему, генерирует ссылку на скачивание и генерирует письмо. Это письмо я получаю на свою почту, жму по ссылке скачать и качаю сконвертированный mp3 файл
+# Технологии: redis, celery, ffmpeg, smtp
+
+# Вопросы:
+# Что такое redis?
+# Что такое celery?
+# Для чего нужно celery?
+# Как работает celery?
+# Как celery работает в связке с redis?
+# Что такое worker в celery ?
+# В каких типах данных передаются данные в worker’ов?
