@@ -1,13 +1,12 @@
 from render import render_template
-from task import download
+from tasks import download
 
 def index(request, response):
 	if request.method == "POST":
 		url = request.POST.get('url')
-		uri = download(url)
-		print(uri)
-		response.status_code = 303
-		response.headerlist = [('Location', uri)]
+		email = request.POST.get('email')
+		download.delay(url, email)
+		response.text = "Вам будет отправлено письмо на email"
 		return response
 	data = render_template("index.html")
 	response.text = data 

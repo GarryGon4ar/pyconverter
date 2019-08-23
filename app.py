@@ -25,7 +25,6 @@ class App:
 		response.text = "Not found."
 
 
-
 urls = [
     (r'^$', index),
     (r'check/?$', check_jinja),
@@ -35,6 +34,7 @@ urls = [
 #так как когда вызываю функцию application не могу придумать как добавить обработку запроса
 
 application = App()
+
 
 
 # Необходимо
