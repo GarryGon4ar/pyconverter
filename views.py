@@ -16,5 +16,3 @@ def check_jinja(request, response):
 	data = render_template('check.html', title="Boorsok")
 	response.text = data
 
-def download_link(request, response):
-	pass
