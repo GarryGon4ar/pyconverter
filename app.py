@@ -1,6 +1,6 @@
 import re
 from webob import Request, Response
-from views import index, check_jinja
+from views import index, check_jinja, download_link
 
 class App:
 
@@ -28,6 +28,7 @@ class App:
 urls = [
     (r'^$', index),
     (r'check/?$', check_jinja),
+    (r'^media/', download_link),
 ]
 
 # uwsgi вызывает приложение application, сделал в форме класса, 
